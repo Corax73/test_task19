@@ -1,0 +1,22 @@
+{
+    "autoload": {
+        "psr-4": {
+            "DB\\": "src/db/",
+            "Models\\": "src/Models/",
+            "Controllers\\": "src/Controllers"
+        }
+    },
+    "authors": [
+        {
+            "name": "Corax73",
+            "email": "ramaz999@inbox.ru"
+        }
+    ],
+    "require": {
+        "symfony/var-dumper": "^7.1",
+        "illuminate/collections": "^11.28"
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^1.12"
+    }
+}
