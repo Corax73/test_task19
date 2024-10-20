@@ -95,6 +95,24 @@ abstract class AbstractModel
     }
 
     /**
+     * Search in json field.
+     * @param int $limit
+     * @param int $id
+     * @return array<string, mixed>
+     */
+    public function searchByStopsId(int $limit = 12, int $id = 0): array
+    {
+        $query = 'SELECT * FROM public.' . $this->table . " WHERE EXISTS(SELECT FROM jsonb_array_elements(buses.bus_stops->'stops') el
+        WHERE el->>'id' = :id)" . ' ORDER BY id DESC LIMIT :limit';
+        $stmt = $this->connect->connect(PATH_CONF)->prepare($query);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        $resp = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $resp ? $resp : [];
+    }
+
+    /**
      * Returns the number of model records.
      * @return int
      */

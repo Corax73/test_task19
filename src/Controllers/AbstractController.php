@@ -87,7 +87,7 @@ abstract class AbstractController
                 }
                 break;
             case 'POST':
-                return 'store';
+                return 'find_bus';
                 break;
             case 'PUT':
                 return 'update';
@@ -100,6 +100,7 @@ abstract class AbstractController
         }
     }
 
+    abstract protected function find_bus();
     abstract protected function index();
     abstract protected function show();
     abstract protected function store();

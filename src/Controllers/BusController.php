@@ -9,13 +9,12 @@ class BusController extends AbstractController
     public $apiName = 'find-bus';
 
     /**
-     * Returns all entries.
      * @return string
      */
-    public function index()
+    public function find_bus()
     {
         $buses = new Bus();
-        $buses = $buses->all();
+        $buses = $buses->searchByStopsId(12, $this->requestParams['from']);
         $resp = ['Data not found'];
         $status = 404;
         if ($buses) {
@@ -24,6 +23,12 @@ class BusController extends AbstractController
         }
         return $this->response($resp, $status);
     }
+
+    /**
+     * Returns all entries.
+     * @return string
+     */
+    public function index() {}
 
     /**
      * Returns the first entry.
