@@ -10,7 +10,8 @@ class Bus extends AbstractModel
     protected string $table = 'buses';
     public array $bus_stops;
     protected array $fillable = [
-        'bus_stops'
+        'bus_stops',
+        'title'
     ];
     protected array $guarded = [];
     protected string $unique = '';

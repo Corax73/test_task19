@@ -97,17 +97,18 @@ abstract class AbstractModel
     /**
      * Search in json field.
      * @param int $limit
-     * @param int $id
+     * @param array<int, int> $id
      * @return array<string, mixed>
      */
-    public function searchByStopsId(int $limit = 12, int $id = 0): array
+    public function searchByStopsId(array $ids = []): array
     {
-        $query = 'SELECT * FROM public.' . $this->table . " WHERE EXISTS(SELECT FROM jsonb_array_elements(buses.bus_stops->'stops') el
-        WHERE el->>'id' = :id)" . ' ORDER BY id DESC LIMIT :limit';
+        $placeholders = str_repeat('?, ',  count($ids) - 1) . '?';
+        $query = 'SELECT id, ' . implode(', ', array_diff($this->fillable, $this->guarded)) .
+            ' FROM public.' . $this->table . " WHERE EXISTS(SELECT FROM jsonb_array_elements(buses.bus_stops->'stops') el WHERE el->>'id' IN (
+        $placeholders
+        ))" . ' ORDER BY id DESC';
         $stmt = $this->connect->connect(PATH_CONF)->prepare($query);
-        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
-        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
-        $stmt->execute();
+        $stmt->execute($ids);
         $resp = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $resp ? $resp : [];
     }
