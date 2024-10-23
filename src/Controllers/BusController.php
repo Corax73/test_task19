@@ -3,12 +3,19 @@
 namespace Controllers;
 
 use Models\Bus;
+use Models\Stop;
 use Services\TimeService;
 
 class BusController extends AbstractController
 {
-    public $apiName = 'find-bus';
+    public string $apiName = 'find-bus';
     const COUNT_ARRIVALS = 3;
+
+    public function __construct()
+    {
+        $this->model = new Bus();
+        parent::__construct();
+    }
 
     /**
      * @return string
@@ -16,12 +23,16 @@ class BusController extends AbstractController
     public function find_bus()
     {
         $time = time();
-        $buses = new Bus();
-        $buses = $buses->searchByStopsId([$this->requestParams['from'], $this->requestParams['to']]);
-        $resp = ['Data not found'];
-        $status = 404;
+        if (
+            isset($this->requestParams['from']) &&
+            isset($this->requestParams['to']) &&
+            $this->requestParams['from'] &&
+            $this->requestParams['to']
+        ) {
+            $buses = $this->model->searchByStopsId([intval($this->requestParams['from']), intval($this->requestParams['to'])]);
+        }
         if ($buses) {
-            $resp = [
+            $this->resp = [
                 'from' => $this->requestParams['from'],
                 'to' => $this->requestParams['to'],
                 'buses' => []
@@ -34,14 +45,17 @@ class BusController extends AbstractController
                     $currentStopArrival = TimeService::getEarliestTime($currentStop->first()['arrival'], self::COUNT_ARRIVALS, $time);
                 }
 
-                $resp['buses'][] = [
-                    'route' => 'Автобус ' . $bus['title'] . ' в сторону ост. ' . $stops->last()['id'],
+                $stop = new Stop();
+                $lastStop = $stop->find($stops->last()['id']);
+                $lastStopTitle = $lastStop && isset($lastStop[0]['title']) ? $lastStop[0]['title'] : $stops->last()['id'];
+                $this->resp['buses'][] = [
+                    'route' => 'Автобус ' . $bus['title'] . ' в сторону ост. ' . $lastStopTitle,
                     'next_arrivals' => $currentStopArrival
                 ];
             }
-            $status = 200;
+            $this->status = 200;
         }
-        return $this->response($resp, $status);
+        return $this->response($this->resp, $this->status);
     }
 
     /**
@@ -66,7 +80,26 @@ class BusController extends AbstractController
      * Updates a record.
      * @return string
      */
-    public function update() {}
+    public function update(): string
+    {
+        if (isset($this->requestParams['bus_id'])) {
+            $newData = [];
+            if (isset($this->requestParams['title'])) {
+                $newData['title'] = $this->requestParams['title'];
+            }
+            if (isset($this->requestParams['bus_stops'])) {
+                $newData['bus_stops'] = $this->requestParams['bus_stops'];
+            }
+
+            if ($newData) {
+                if($this->model->update($newData, $this->requestParams['bus_id'])) {
+                    $this->resp = ['success' => true];
+                    $this->status = 200;
+                }
+            }
+        }
+        return $this->response($this->resp, $this->status);
+    }
 
     /**
      * Deletes the record.

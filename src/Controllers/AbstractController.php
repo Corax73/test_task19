@@ -3,15 +3,19 @@
 namespace Controllers;
 
 use Exception;
+use Models\AbstractModel;
 use RuntimeException;
 
 abstract class AbstractController
 {
-    public $apiName = '';
-    protected $method = '';
-    public $requestUri = [];
-    public $requestParams = [];
-    protected $action = '';
+    protected string $method = '';
+    protected string $action = '';
+    protected int $status = 404;
+    protected array $resp = ['Data not found'];
+    protected AbstractModel $model;
+    public string $apiName = '';
+    public array $requestUri = [];
+    public array $requestParams = [];
 
     public function __construct()
     {

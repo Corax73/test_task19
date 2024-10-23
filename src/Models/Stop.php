@@ -5,13 +5,11 @@ namespace Models;
 /**
  * @property string $table
  */
-class Bus extends AbstractModel
+class Stop extends AbstractModel
 {
-    protected string $table = 'buses';
-    public array $bus_stops;
+    protected string $table = 'stops';
     public string $title;
     protected array $fillable = [
-        'bus_stops',
         'title'
     ];
     protected array $guarded = [];
@@ -19,20 +17,18 @@ class Bus extends AbstractModel
 
     /**
      * Save call data.
-     * @param array <string, mixed> $bus_stops
      * @param string $title
      * @return bool
      */
-    public function save(array $bus_stops, string $title): bool
+    public function save(string $title): bool
     {
         $resp = false;
         $strFields = implode(', ', $this->fillable);
-        if ($strFields && $bus_stops && !empty($title)) {
+        if ($strFields) {
             try {
-                $query = 'INSERT INTO `' . $this->table . '` (' . $strFields . ', created_at) VALUES (:bus_stops, :title, :now)';
+                $query = 'INSERT INTO `' . $this->table . '` (' . $strFields . ', created_at) VALUES (:stop_stops, :now)';
                 $params = [
                     ':title' => $title,
-                    ':bus_stops' => $bus_stops,
                     ':now' => date('Y-m-d h:i:s', time())
                 ];
                 $stmt = $this->connect->connect(PATH_CONF)->prepare($query);
@@ -44,35 +40,6 @@ class Bus extends AbstractModel
                     $this->connect->connect(PATH_CONF)->rollback();
                 }
                 throw $e;
-            }
-        }
-        return $resp;
-    }
-
-    /**
-     * Updates report data.
-     * @param array $newData
-     * @param int $id
-     * @return bool
-     */
-    public function update(array $newData, int $id, string $jsonKey = ''): bool
-    {
-        $resp = false;
-        if ($this->find($id)) {
-            $keys = array_keys($newData);
-            $check = array_diff($keys, $this->fillable);
-            if (!$check) {
-                $query = 'UPDATE public.' . $this->table . ' SET ';
-                $params = [];
-                foreach ($keys as $key) {
-                    $query .= $key . ' = :' . $key . ', ';
-                    $params[':' . $key] = $newData[$key];
-                }
-                $query = mb_substr($query, 0, -2);
-                $query .= ' WHERE id = ' . $id;
-
-                $stmt = $this->connect->connect(PATH_CONF)->prepare($query);
-                $resp =  $stmt->execute($params);
             }
         }
         return $resp;
@@ -104,8 +71,8 @@ class Bus extends AbstractModel
     public function saveByFill(): bool
     {
         $resp = false;
-        if ($this->bus_stops) {
-            $resp = $this->save($this->bus_stops, $this->title);
+        if (!empty($this->title)) {
+            $resp = $this->save($this->title);
         }
         return $resp;
     }
@@ -118,8 +85,7 @@ class Bus extends AbstractModel
     protected function validate(array $data): array
     {
         $resp = [];
-        if (isset($data['bus_stops']) && $data['bus_stops'] && isset($data['title']) && !empty($data['title'])) {
-            $resp['bus_stops'] = $data['bus_stops'];
+        if (isset($data['title']) && !empty($data['title'])) {
             $resp['title'] = $data['title'];
         }
         return $resp;
