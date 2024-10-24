@@ -8,13 +8,37 @@ use RuntimeException;
 
 abstract class AbstractController
 {
+    /**
+     * @var string
+     */
     protected string $method = '';
+    /**
+     * @var string
+     */
     protected string $action = '';
+    /**
+     * @var int
+     */
     protected int $status = 404;
+    /**
+     * @var array<mixed, mixed>
+     */
     protected array $resp = ['Data not found'];
+    /**
+     * @var AbstractModel
+     */
     protected AbstractModel $model;
+    /**
+     * @var string
+     */
     public string $apiName = '';
+    /**
+     * @var array<mixed, string>
+     */
     public array $requestUri = [];
+    /**
+     * @var array<string, mixed>
+     */
     public array $requestParams = [];
 
     public function __construct()
@@ -24,7 +48,7 @@ abstract class AbstractController
         header('Content-Type: application/json');
 
         $this->requestUri = explode('/', trim($_SERVER['REQUEST_URI'], '/'));
-        $this->requestParams = $_REQUEST;
+        $this->requestParams = array_merge($_REQUEST, $_POST ? $_POST : json_decode(strval(file_get_contents('php://input')), true));
         $this->method = $_SERVER['REQUEST_METHOD'];
 
         if ($this->method == 'POST' && array_key_exists('_METHOD', $_REQUEST)) {
@@ -40,8 +64,9 @@ abstract class AbstractController
 
     /**
      * Starts the controller.
+     * @return ?string
      */
-    public function run()
+    public function run(): ?string
     {
         if (array_shift($this->requestUri) !== 'api' || array_shift($this->requestUri) !== $this->apiName) {
             throw new RuntimeException('API Not Found', 404);
@@ -56,16 +81,23 @@ abstract class AbstractController
     }
 
     /**
-     * Returns status and json
-     * @return string
+     * Set status. Returns json.
+     * @param array<mixed, mixed> $data
+     * @param int $status
+     * @return string|bool
      */
-    protected function response(array $data, $status = 500): string
+    protected function response(array $data, $status = 500): string|bool
     {
         header('HTTP/1.1 ' . $status . ' ' . $this->requestStatus($status));
         return json_encode($data);
     }
 
-    private function requestStatus($code)
+    /**
+     * Returns status as string.
+     * @param int $code
+     * @return string
+     */
+    private function requestStatus(int $code): string
     {
         $status = [
             200 => 'OK',
@@ -76,32 +108,39 @@ abstract class AbstractController
 
             500 => 'Internal Server Error'
         ];
-        return $status[$code] ? $status[$code] : $status[500];
+        return isset($status[$code]) ? $status[$code] : $status[500];
     }
 
-    protected function getAction()
+    /**
+     * Returns method name or empty string.
+     * @return string
+     */
+    protected function getAction(): string
     {
+        $resp = '';
         $method = $this->method;
         switch ($method) {
             case 'GET':
                 if ($this->requestUri) {
-                    return 'show';
+                    $resp = 'show';
                 } else {
-                    return 'index';
+                    $resp = 'index';
                 }
                 break;
             case 'POST':
-                return 'find_bus';
+                if ($this->requestUri) {
+                    $resp = 'find_bus';
+                }
                 break;
             case 'PUT':
-                return 'update';
+                $resp = 'update';
                 break;
             case 'DELETE':
-                return 'delete';
+                $resp = 'delete';
                 break;
             default:
-                return null;
         }
+        return $resp;
     }
 
     abstract protected function find_bus();
