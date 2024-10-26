@@ -4,5 +4,7 @@ parameters:
         - src/Models
         - src/Repositories
         - src/Controllers
+        - src/db
+        - src/Services
     bootstrapFiles:
         - config/const.php
