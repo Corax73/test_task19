@@ -28,7 +28,7 @@ class BusController extends AbstractController
             $this->requestParams['from'] &&
             $this->requestParams['to']
         ) {
-            $buses = $this->model->searchByStopsId([intval($this->requestParams['from']), intval($this->requestParams['to'])]);
+            $buses = $this->model->searchByStopsId(intval($this->requestParams['from']), intval($this->requestParams['to']));
             if ($buses) {
                 $this->resp = BusStopsRepository::getFindBusResponse(
                     $buses,
@@ -49,7 +49,10 @@ class BusController extends AbstractController
      * Returns all entries.
      * @return string
      */
-    public function index() {}
+    public function index() {
+        header('Content-Type: text/html; charset=UTF-8');
+        require_once '../api/swagger/index.php';
+    }
 
     /**
      * Returns the first entry.

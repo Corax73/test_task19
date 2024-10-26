@@ -1,0 +1,70 @@
+openapi: 3.0.3
+info:
+  title: Swagger Go api - OpenAPI 3.0
+  version: 1.0.11
+servers:
+  - url: http://localhost:8000/api
+paths:
+  /buses/find-bus:
+    post:
+      tags:
+        - find-bus
+      summary: Searching for a route by ID of the starting and final (for the user) bus stop
+      description: pass integer IDs
+      operationId: find-bus
+      requestBody:
+        description: bus route search
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - "from"
+                - "to"
+              properties:
+                from:
+                  description: ID of the starting bus stop
+                  example: 3
+                  type: integer
+                to:
+                  description: ID of the starting bus stop
+                  example: 4
+                  type: integer
+              type: object
+      responses:
+        "200":
+          description: Successful operation
+        "404":
+          description: Not found
+  /buses:
+    put:
+      tags:
+        - update
+      summary: updating the list(json) of route stops
+      description: pass integer bus_id
+      requestBody:
+        description: pass existing model key fields
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - "bus_id"
+                - "bus_stops"
+              properties:
+                bus_id:
+                  type: integer
+                  example: 1
+                bus_stops:
+                  type: string
+                  example: '{"stops":[{"id":7,"arrival":["6.00","6.30","7.00","7.30","8.00","9.15","10.30","11.45","12.00","13.15","14.30","15.45","16.00","17.15","18.30","19.45","20.00","21.15","22.30","23.45"]},{"id":2,"arrival":["6.00","6.30","7.00","7.30","8.00","9.15","10.30","11.45","12.00","13.15","14.30","15.45","16.00","17.15","18.30","19.45","20.00","21.15","22.30","23.45"]},{"id":3,"arrival":["6.00","6.30","7.00","7.30","8.00","9.15","10.30","11.45","12.00","13.15","14.30","15.45","16.00","17.15","18.30","19.45","20.00","21.15","22.30","23.45"]}]}'
+              type: object
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+          required: true
+        "404":
+          description: Not found

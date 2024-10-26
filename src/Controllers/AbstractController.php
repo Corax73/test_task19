@@ -48,7 +48,8 @@ abstract class AbstractController
         header('Content-Type: application/json');
 
         $this->requestUri = explode('/', trim($_SERVER['REQUEST_URI'], '/'));
-        $this->requestParams = array_merge($_REQUEST, $_POST ? $_POST : json_decode(strval(file_get_contents('php://input')), true));
+        $_POST = $_POST ? $_POST : json_decode(strval(file_get_contents('php://input')), true) ?? [];
+        $this->requestParams = array_merge($_REQUEST, $_POST);
         $this->method = $_SERVER['REQUEST_METHOD'];
 
         if ($this->method == 'POST' && array_key_exists('_METHOD', $_REQUEST)) {

@@ -66,16 +66,19 @@ abstract class AbstractModel
 
     /**
      * Search in json field.
-     * @param array<int, int> $ids
+     * @param int $from
+     * @param int $to
      * @return array<string, mixed>
      */
-    public function searchByStopsId(array $ids = []): array
+    public function searchByStopsId(int $from, int $to): array
     {
-        $placeholders = str_repeat('?, ',  count($ids) - 1) . '?';
         $query = 'SELECT id, ' . implode(', ', array_diff($this->fillable, $this->guarded)) .
-            ' FROM public.' . $this->table . " WHERE EXISTS(SELECT FROM jsonb_array_elements(buses.bus_stops->'stops') el WHERE el->>'id' IN (
-        $placeholders
-        ))" . ' ORDER BY id DESC';
+            ' FROM public.' . $this->table . " WHERE EXISTS(SELECT FROM jsonb_array_elements(buses.bus_stops->'stops') el WHERE el->>'id' = :from)
+            AND EXISTS(SELECT FROM jsonb_array_elements(buses.bus_stops->'stops') el WHERE el->>'id' = :to)" . ' ORDER BY id DESC';
+        $ids = [
+            ':from' => $from,
+            ':to' => $to
+        ];
         $stmt = $this->connect->connect(PATH_CONF)->prepare($query);
         $stmt->execute($ids);
         $resp = $stmt->fetchAll(PDO::FETCH_ASSOC);
